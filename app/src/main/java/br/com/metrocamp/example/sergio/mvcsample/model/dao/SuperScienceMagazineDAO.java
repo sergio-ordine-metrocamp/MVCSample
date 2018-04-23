@@ -52,12 +52,16 @@ public class SuperScienceMagazineDAO {
             article.setDate(formatter.parse("14/03/2018"));
             article.setTitle("Morre aos 76 anos o físico Stephen Hawking.");
             list.add(article);
-            
+
             article = new Article();
             article.setDate(formatter.parse("22/04/2018"));
             article.setTitle("Reconstituição mostra verdadeiro rosto de D. Pedro I com fratura no nariz.");
             list.add(article);
 
+            article = new Article();
+            article.setDate(formatter.parse("15/09/2017"));
+            article.setTitle("Cassini: Nasa encerra missão de 20 anos com mergulho final em Saturno.");
+            list.add(article);
 
 
 
@@ -71,8 +75,19 @@ public class SuperScienceMagazineDAO {
 
     public List<Article> getArticles(Date from, Date to) {
 
+        List<Article> filteredList = new ArrayList<>();
 
+        for (Article article : list) {
 
+            Date articleDate = article.getDate();
+
+            if (articleDate.after(from) && articleDate.before(to)) {
+                filteredList.add(article);
+            }
+
+        }
+
+        return filteredList;
 
     }
 

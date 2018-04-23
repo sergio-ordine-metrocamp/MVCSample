@@ -4,6 +4,8 @@ import android.content.res.ColorStateList;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 
@@ -21,12 +23,12 @@ public class ArticleList extends AppCompatActivity {
     boolean isScienceEnabled = false;
     boolean isEnterteinmentEnabled = false;
 
+    ArticleAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_article_list);
-
-        SuperScienceMagazineDAO dao = new SuperScienceMagazineDAO();
 
         //Buttons
         FloatingActionButton scienceButton = findViewById(R.id.scienceButton);
@@ -46,6 +48,29 @@ public class ArticleList extends AppCompatActivity {
                 updateButton((FloatingActionButton)view, isEnterteinmentEnabled);
             }
         });
+
+        RecyclerView lista = (RecyclerView)findViewById(R.id.articleList);
+        lista.setLayoutManager(new LinearLayoutManager(this));
+
+        try {
+            Date startDate = formatter.parse("01/01/2018");
+            Date endDate = new Date();
+            SuperScienceMagazineDAO dao = new SuperScienceMagazineDAO();
+            List<Article> articles = dao.getArticles(startDate,endDate);
+
+            adapter = new ArticleAdapter(this, articles);
+            lista.setAdapter(adapter);
+
+        } catch (Exception ex) {
+
+        }
+
+        //adapter = new CompleteAdapter(this, CidadeServices.getClima());
+        //lista.setAdapter(adapter);
+        //adapter.setListener(this);
+
+
+
 
     }
 
