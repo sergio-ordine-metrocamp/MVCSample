@@ -10,12 +10,18 @@ import android.util.Log;
 import android.view.View;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
 import br.com.metrocamp.example.sergio.mvcsample.R;
 import br.com.metrocamp.example.sergio.mvcsample.model.dao.SuperScienceMagazineDAO;
+import br.com.metrocamp.example.sergio.mvcsample.model.dao.WorldOfLineNewsDAO;
 import br.com.metrocamp.example.sergio.mvcsample.model.vo.Article;
+import br.com.metrocamp.example.sergio.mvcsample.model.vo.ArticleType;
 
 public class ArticleList extends AppCompatActivity {
 
@@ -37,6 +43,7 @@ public class ArticleList extends AppCompatActivity {
             public void onClick(View view) {
                 isScienceEnabled = !isScienceEnabled;
                 updateButton((FloatingActionButton)view, isScienceEnabled);
+                updateArticles();
             }
         });
 
@@ -46,31 +53,15 @@ public class ArticleList extends AppCompatActivity {
             public void onClick(View view) {
                 isEnterteinmentEnabled = !isEnterteinmentEnabled;
                 updateButton((FloatingActionButton)view, isEnterteinmentEnabled);
+                updateArticles();
             }
         });
 
         RecyclerView lista = (RecyclerView)findViewById(R.id.articleList);
         lista.setLayoutManager(new LinearLayoutManager(this));
 
-        try {
-            Date startDate = formatter.parse("01/01/2018");
-            Date endDate = new Date();
-            SuperScienceMagazineDAO dao = new SuperScienceMagazineDAO();
-            List<Article> articles = dao.getArticles(startDate,endDate);
-
-            adapter = new ArticleAdapter(this, articles);
-            lista.setAdapter(adapter);
-
-        } catch (Exception ex) {
-
-        }
-
-        //adapter = new CompleteAdapter(this, CidadeServices.getClima());
-        //lista.setAdapter(adapter);
-        //adapter.setListener(this);
-
-
-
+        adapter = new ArticleAdapter(this);
+        lista.setAdapter(adapter);
 
     }
 
@@ -83,5 +74,61 @@ public class ArticleList extends AppCompatActivity {
     protected int getButtonColor(boolean state) {
         return state ? R.color.colorPrimaryDark: R.color.colorAccent;
     }
+
+
+    protected void updateArticles() {
+
+        List<Article> articles = new ArrayList<>();
+
+
+            try {
+                //News from this year...
+                Date startDate = formatter.parse("01/01/2018");
+                Date endDate = new Date();
+
+                //Business logic!
+                if (isScienceEnabled) {
+                    //Get the article list
+                    SuperScienceMagazineDAO dao = new SuperScienceMagazineDAO();
+
+                    List<Article> partialList = dao.getArticles(startDate, endDate);
+
+                    for (Article article:partialList) {
+                        article.setType(ArticleType.Science);
+                    }
+
+
+                    articles.addAll(partialList);
+                }
+                if (isEnterteinmentEnabled) {
+
+                    WorldOfLineNewsDAO dao = new WorldOfLineNewsDAO();
+
+                    List<String> categories = new ArrayList<String>(Arrays.asList("cinema",
+                            "entretenimento",
+                            "cultura"));
+
+                    List<Article> partialList = dao.getArticles(startDate,endDate,categories);
+
+                    for (Article article:partialList) {
+                        article.setType(ArticleType.Enterteinment);
+                    }
+
+                    articles.addAll(partialList);
+                }
+            } catch (Exception ex) {
+                //Notify errors to user
+            }
+
+        //Presentation logic (Platform-independent!) - Sort articles by date
+        Collections.sort(articles, new Comparator<Article>() {
+            public int compare(Article o1, Article o2) {
+                return o1.getDate().compareTo(o2.getDate());
+            }
+        });
+
+        adapter.setList(articles);
+    }
+
 
 }
